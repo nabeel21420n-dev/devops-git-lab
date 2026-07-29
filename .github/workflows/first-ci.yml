@@ -1,0 +1,54 @@
+name: First CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Show runner information
+        run: |
+          echo "CI runner successfully start ho gaya"
+          uname -a
+          git --version
+
+      - name: Validate tracked Bash scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          scripts="$(git ls-files '*.sh')"
+
+          if [ -z "${scripts}" ]; then
+            echo "Koi tracked Bash script nahi mili — check skip."
+          else
+            while IFS= read -r script; do
+              echo "Checking: ${script}"
+              bash -n "${script}"
+            done <<< "${scripts}"
+          fi
+
+          echo "Bash syntax checks successful"
+
+      - name: Check required documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f README.md
+          echo "README.md repository mein mojood hai"
