@@ -9,6 +9,8 @@ on:
     branches:
       - main
 
+  workflow_dispatch:
+
 permissions:
   contents: read
 
@@ -24,6 +26,9 @@ jobs:
       - name: Show runner information
         run: |
           echo "CI runner successfully start ho gaya"
+          echo "Event: ${GITHUB_EVENT_NAME}"
+          echo "Branch/ref: ${GITHUB_REF}"
+          echo "Commit: ${GITHUB_SHA}"
           uname -a
           git --version
 
@@ -52,3 +57,29 @@ jobs:
 
           test -f README.md
           echo "README.md repository mein mojood hai"
+
+      - name: Generate CI report
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p ci-output
+
+          {
+            echo "===== CI VALIDATION REPORT ====="
+            echo "Workflow: ${GITHUB_WORKFLOW}"
+            echo "Run ID: ${GITHUB_RUN_ID}"
+            echo "Run number: ${GITHUB_RUN_NUMBER}"
+            echo "Event: ${GITHUB_EVENT_NAME}"
+            echo "Git ref: ${GITHUB_REF}"
+            echo "Commit SHA: ${GITHUB_SHA}"
+            echo "Result: validation successful"
+          } | tee ci-output/ci-report.txt
+
+      - name: Upload CI report
+        uses: actions/upload-artifact@v7
+        with:
+          name: ci-report-${{ github.run_number }}
+          path: ci-output/ci-report.txt
+          if-no-files-found: error
+          retention-days: 7
