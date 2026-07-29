@@ -8,5 +8,6 @@ if [ "${ENVIRONMENT}" = "production" ]; then
     echo "Production environment selected"
 else
     echo "Non-production environment selected"
+fi
 
 echo "Script completed"
