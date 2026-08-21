@@ -133,6 +133,7 @@ jobs:
           file: ./app/Dockerfile
           push: false
           load: true
+          pull: true
           tags: ci-node-app:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -256,6 +257,7 @@ jobs:
           context: ./app
           file: ./app/Dockerfile
           push: true
+          pull: true
           tags: |
             ghcr.io/${{ github.repository }}:${{ github.sha }}
             ghcr.io/${{ github.repository }}:main
