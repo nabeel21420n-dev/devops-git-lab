@@ -182,6 +182,42 @@ jobs:
         if: always()
         run: docker logs ci-node-app || true
 
+
+      - name: Generate image SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          image: ci-node-app:${{ github.sha }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom-${{ github.run_number }}
+          path: sbom.spdx.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Show vulnerability report
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ci-node-app:${{ github.sha }}
+          format: table
+          exit-code: '0'
+          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
+
+      - name: Enforce vulnerability policy
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ci-node-app:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'HIGH,CRITICAL'
+
+
       - name: Remove test container
         if: always()
         run: docker rm -f ci-node-app || true
